@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <meta charset = "UTF-8">
+      <title>Audio and Video</title>
+   </head>
+   
+   <body>
+      <video autoplay></video>
+      <script type = "text/javascript">
+
+        const {desktopCapturer} = require('electron');
+
+        function _desktopCapturer(){
+            return new Promise((resolve, reject) => {
+                desktopCapturer.getSources({types: ['screen']}, (error, sources) => {
+                    if (error) {throw error;}
+                            constraints={                    
+                            audio: false,
+                            video: {
+                                mandatory: {
+                                    chromeMediaSource: 'desktop',
+                                    chromeMediaSourceId:'screen:0:0',// sources[0].id,
+                                    minWidth: 1280,
+                                    maxWidth: 1280,
+                                    minHeight: 720,
+                                    maxHeight: 720
+                                }
+                            }
+                        };
+                        resolve(navigator.mediaDevices.getUserMedia(constraints));
+                })
+            })
+        }
+
+        function _audioCapturer(){
+            return new Promise((resolve,reject)=> {
+            let constraints = {audio:true, video:false};
+            resolve(navigator.mediaDevices.getUserMedia(constraints));
+            })
+        }
+      
+    Promise.all([_desktopCapturer(),_audioCapturer()])
+    
+        .then((streams) => {
+            let audioTrack = streams[1].getAudioTracks();
+            let videoStream = streams[0];
+            videoStream.addTrack(audioTrack[0]);
+            handleStream(videoStream);
+        })
+    
+        .catch((e) => {
+            handleError(e);
+        })
+
+
+
+
+    function handleStream (stream) {console.log(URL.createObjectURL(stream));
+        document.querySelector('video').src = URL.createObjectURL(stream)
+    }
+    
+    function handleError (e) {
+        console.log(e)
+    }
+
+
+/*
+        let recorder;
+        let blobs = [];
+
+        function captureScreenVideoWithAudio() {
+// vše do konce funkce je jen webkitgetusermedia, který má argumenty constraints, successcallback, errorcallback
+            navigator.webkitGetUserMedia({
+                //CONSTRAINTS
+                audio: true
+            },
+            //SUCCESSCALLBACK
+            // audioStream je ten stream, takhle se jmenuje jen proto, že je tam jen audio :)
+             function(audioStream) {
+                navigator.webkitGetUserMedia({
+                    // druhý webkit...
+                    // constraints
+                    audio: false,
+                    video: {
+                        mandatory: {
+                        chromeMediaSource: 'screen',
+                        chromeMediaSourceId:'screen:0:0',
+                        minWidth: 1280,
+                        minHeight: 720
+                        }
+                    }
+                }, //successcallback, errorcallback
+                    handleVideoStream(audioStream),
+                    handleUserMediaError
+                );
+            },
+            //ERRORCALLBACK
+            function() {});
+
+        }
+
+        function handleVideoStream(audioStream) {
+            return function(videoStream) {
+                if (audioStream) {
+                let audioTracks = audioStream.getAudioTracks();
+                if (audioTracks.length > 0) {
+                    videoStream.addTrack(audioTracks[0]);
+                }
+                }
+                recorder = new MediaRecorder(videoStream);
+                blobs = [];
+                recorder.ondataavailable = function(event) {
+                blobs.push(event.data);
+                };
+                recorder.start();
+            };
+        }
+
+        function handleUserMediaError(e) {
+            console.error('handleUserMediaError', e);
+        }
+
+*/
+
+/*
+//TOHLE JE FUNKČNÍ!!!
+    function _desktopCapturer(){
+        return new Promise((resolve, reject) => {
+            desktopCapturer.getSources({types: ['screen']}, (error, sources) => {
+                if (error) {throw error;}
+                        constraints={                    
+                        audio: true,
+                        video: {
+                            mandatory: {
+                                chromeMediaSource: 'desktop',
+                                chromeMediaSourceId:'screen:0:0',// sources[0].id,
+                                minWidth: 1280,
+                                maxWidth: 1280,
+                                minHeight: 720,
+                                maxHeight: 720
+                            }
+                        }
+                    };
+                    resolve(constraints);
+            })
+        })
+    }
+
+    function _simple(){
+        return new Promise((resolve,reject) => {
+            let constraints = {
+                audio: true,
+                video:true
+            }
+            resolve(constraints);
+        })
+    }
+
+    function _constraintsPicker(constraints){
+            return new Promise((resolve,reject) => {
+                if(true && true){
+                    resolve(_desktopCapturer());
+                } else {
+                    resolve (_doNothing());
+                }
+            }
+        )}
+
+let constraints = {audio:true,video:true};
+_constraintsPicker(constraints)
+
+    .then((constraints)=>{
+        console.log(constraints);
+        console.log(navigator.mediaDevices.getUserMedia(constraints));
+        return navigator.mediaDevices.getUserMedia(constraints);})
+    .then((stream) => {
+        handleStream(stream);
+    })
+
+    .catch((e) => {
+        handleError(e);
+    })
+        
+        function handleStream (stream) {console.log(URL.createObjectURL(stream));
+            document.querySelector('video').src = URL.createObjectURL(stream)
+        }
+        
+        function handleError (e) {
+            console.log(e)
+        }
+*/
+      </script>
+   </body>
+</html>
